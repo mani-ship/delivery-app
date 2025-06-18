@@ -12,6 +12,31 @@ from rest_framework import generics, permissions
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer ,ProductSerializers
 
+import razorpay
+from django.conf import settings
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+
+from rest_framework import generics, status
+from rest_framework.permissions import IsAuthenticated
+from .models import CartItem, Order, OrderItem
+from app.models import Product
+from .serializers import CartItemSerializer, OrderSerializer
+
+import random
+
+from .utils import get_frequently_bought_together
+from .serializers import ProductSerializer
+
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import Profile, Store
+from geopy.distance import geodesic
+
+
 class RegisterView(APIView):
     def post(self, request):
         ...
@@ -53,13 +78,6 @@ class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-
-
-from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
-from .models import CartItem, Order, OrderItem
-from app.models import Product
-from .serializers import CartItemSerializer, OrderSerializer
 
 class CartItemListCreateView(generics.ListCreateAPIView):
     serializer_class = CartItemSerializer
@@ -113,11 +131,6 @@ class OrderHistoryView(generics.ListAPIView):
     def get_queryset(self):
         return Order.objects.filter(user=self.request.user).order_by('-created_at')
 
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-from .models import Profile, Store
-from geopy.distance import geodesic
 
 class UpdateLocationView(APIView):
     permission_classes = [IsAuthenticated]
@@ -160,10 +173,6 @@ class UpdateLocationView(APIView):
             
         })
 
-    
-
-from .utils import get_frequently_bought_together
-from .serializers import ProductSerializer
 
 class FrequentlyBoughtTogetherView(APIView):
     def get(self, request, product_id):
@@ -194,13 +203,6 @@ class ResetPasswordView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-import razorpay
-from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework.permissions import IsAuthenticated
-from rest_framework import status
-
 class CreateOrderView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -222,7 +224,6 @@ class CreateOrderView(APIView):
             "currency": payment["currency"],
             "key": settings.RAZORPAY_KEY_ID
         })
-import random
 
 class RandomProductsView(APIView):
     def get(self, request):
