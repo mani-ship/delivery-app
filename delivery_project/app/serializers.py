@@ -26,7 +26,7 @@ class RegisterSerializer(serializers.ModelSerializer):
             errors['email'] = "Email already exists."
 
         if errors:
-            raise serializers.ValidationError(errors)  # Raise both errors together
+            raise serializers.ValidationError(errors)  # Raise both errors 
 
         return data
 
