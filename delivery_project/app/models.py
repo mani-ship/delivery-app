@@ -1,7 +1,6 @@
 from django.contrib.auth.models import User
 from django.db import models
-from django.db import models
-from app.models import Product  
+from .models import * 
 from .choice import QUANTITY_CHOICES
 
 from django.db.models.signals import post_save
