@@ -14,13 +14,10 @@ from .serializers import CategorySerializer, ProductSerializer ,ProductSerialize
 
 import razorpay
 from django.conf import settings
-from rest_framework.views import APIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework import status
 
 from rest_framework import generics, status
-from rest_framework.permissions import IsAuthenticated
 from .models import CartItem, Order, OrderItem
 from app.models import Product
 from .serializers import CartItemSerializer, OrderSerializer
@@ -28,11 +25,6 @@ from .serializers import CartItemSerializer, OrderSerializer
 import random
 
 from .utils import get_frequently_bought_together
-from .serializers import ProductSerializer
-
-from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
 from .models import Profile, Store
 from geopy.distance import geodesic
 
