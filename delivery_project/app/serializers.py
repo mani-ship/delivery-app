@@ -38,22 +38,16 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
 
 
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from rest_framework.exceptions import AuthenticationFailed
+
 class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
     def validate(self, attrs):
         try:
-            data = super().validate(attrs)
-
-            data.update({
-                'username': self.user.username,
-                'email': self.user.email,
-            })
-            return data
-
+            return super().validate(attrs)
         except AuthenticationFailed:
-            # Replace the default 'detail' key with 'message'
-            raise AuthenticationFailed({
-                "message": "No active account found with the given credentials"
-            })
+            raise AuthenticationFailed("Invalid username or password")
+
     
 
 class CategorySerializer(serializers.ModelSerializer):
