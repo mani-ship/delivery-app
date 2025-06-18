@@ -2,9 +2,6 @@ from django.urls import path
 from .views import RegisterView,MyTokenObtainPairView,UpdateLocationView, FrequentlyBoughtTogetherView,ForgotPasswordView,ResetPasswordView,CreateOrderView,RandomProductsView,UpdateLocationView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
-
-
-
 from django.urls import path
 from .views import (
     CategoryListCreateView,
@@ -12,7 +9,6 @@ from .views import (
     ProductListCreateView,
     ProductRetrieveUpdateDestroyView,
 )
-
 
 from django.urls import path
 from .views import (
