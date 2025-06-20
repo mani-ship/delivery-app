@@ -66,10 +66,26 @@ class ProductListCreateView(generics.ListCreateAPIView):
         return queryset
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+     def get_queryset(self):
+        queryset = Product.objects.all().order_by('-created_at')
+        category_id = self.request.query_params.get('category_id')
+        if category_id:
+            queryset = queryset.filter(category__id=category_id)
+        return queryset
 
+     def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        if not queryset.exists():
+            return Response({"message": "No products found."}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.exceptions import ValidationError  # ✅ Import here
 
 class CartItemListCreateView(generics.ListCreateAPIView):
     serializer_class = CartItemSerializer
@@ -79,7 +95,15 @@ class CartItemListCreateView(generics.ListCreateAPIView):
         return CartItem.objects.filter(user=self.request.user)
 
     def perform_create(self, serializer):
-        serializer.save(user=self.request.user)
+        user = self.request.user
+        product = serializer.validated_data.get('product')
+
+        # ✅ Check if product is already in cart
+        if CartItem.objects.filter(user=user, product=product).exists():
+            raise ValidationError({"message": "Product already in cart."})
+
+        serializer.save(user=user)
+
     
 
 class CartItemDeleteView(APIView):
@@ -217,10 +241,44 @@ class CreateOrderView(APIView):
             "key": settings.RAZORPAY_KEY_ID
         })
 
+# views.py
+import random
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from .models import Product
+from .serializers import ProductSerializers
+
 class RandomProductsView(APIView):
     def get(self, request):
         products = Product.objects.all()
         random_products = random.sample(list(products), min(5, len(products)))
-        serializer = ProductSerializers(random_products, many=True) 
+        serializer = ProductSerializers(random_products, many=True, context={'request': request})
         return Response(serializer.data)
+
     
+
+
+# views.py
+
+from rest_framework import generics, permissions
+from .models import UserAddress
+from .serializers import AddressSerializer
+
+class AddressListCreateView(generics.ListCreateAPIView):
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = AddressSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        return UserAddress.objects.filter(user=self.request.user)
+

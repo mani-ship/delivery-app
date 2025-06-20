@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView,MyTokenObtainPairView,UpdateLocationView, FrequentlyBoughtTogetherView,ForgotPasswordView,ResetPasswordView,CreateOrderView,RandomProductsView,UpdateLocationView
+from .views import RegisterView,MyTokenObtainPairView,UpdateLocationView, FrequentlyBoughtTogetherView,ForgotPasswordView,ResetPasswordView,CreateOrderView,RandomProductsView,UpdateLocationView,AddressListCreateView,AddressDetailView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from django.urls import path
@@ -55,7 +55,8 @@ urlpatterns = [
     path('random-products/', RandomProductsView.as_view(), name='random-products'),
 
    
-
+    path('user/address/', AddressListCreateView.as_view(), name='user-address'),
+    path('user/addresses/<int:pk>/', AddressDetailView.as_view(), name='address-detail'),
 
 ]
 

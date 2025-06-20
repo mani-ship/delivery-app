@@ -66,10 +66,23 @@ class ProductSerializer(serializers.ModelSerializer):
         fields = ['id', 'name', 'description', 'price','discount_price','image', 'stock', 'category', 'category_id','country_of_origin', 'shelf_life', 'manufacturer_name', 'manufacturer_address','created_at',]
 
 
+# serializers.py
+from rest_framework import serializers
+from .models import Product
+
 class ProductSerializers(serializers.ModelSerializer):
+    in_cart = serializers.SerializerMethodField()
+
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'image','discount_price']
+        fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']
+
+    def get_in_cart(self, product):
+        user = self.context.get('request').user
+        if user.is_authenticated:
+            return product.cartitem_set.filter(user=user).exists()
+        return False
+
 
 
 class CartItemSerializer(serializers.ModelSerializer):
@@ -138,3 +151,15 @@ class ResetPasswordSerializer(serializers.Serializer):
     def save(self):
         self.user.set_password(self.validated_data['new_password'])
         self.user.save()
+
+
+
+# serializers.py
+
+from rest_framework import serializers
+from .models import UserAddress
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = ['id', 'address', 'phone_number', 'alternate_phone_number']
