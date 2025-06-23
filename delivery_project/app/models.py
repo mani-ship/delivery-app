@@ -46,8 +46,8 @@ class CartItem(models.Model):
             '1kg': 1,
             '2kg': 2,
         }
-        return self.product.base_price * multiplier[self.quantity_type] * self.quantity_count
-
+        unit_price = self.product.discount_price or self.product.price
+        return unit_price * multiplier[self.quantity_type] * self.quantity_count
 
     class Meta:
         unique_together = ('user', 'product')

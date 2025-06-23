@@ -76,6 +76,12 @@ class ProductSerializers(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']
+    
+    def get_in_cart(self, obj):
+        request = self.context.get('request')
+        if request and request.user.is_authenticated:
+            return Product.objects.filter(user=request.user, product=obj).exists()
+        return False
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -83,18 +89,35 @@ class ProductSerializers(serializers.ModelSerializer):
         if instance.image:
             representation['image'] = instance.image.url  # gives relative path
         return representation
-    def get_in_cart(self, obj):
-        # Dummy logic, customize this based on your actual cart/user
-        return False
+    
 
 
+
+from rest_framework import serializers
+from .models import CartItem, Product
 
 class CartItemSerializer(serializers.ModelSerializer):
     product_name = serializers.CharField(source='product.name', read_only=True)
+    product_image = serializers.SerializerMethodField()
+    total_price = serializers.SerializerMethodField()
 
     class Meta:
         model = CartItem
-        fields = ['id', 'product', 'product_name', 'quantity','quantity_type','quantity_count']
+        fields = ['id', 'product', 'product_name', 'product_image',
+                  'quantity', 'quantity_type', 'quantity_count', 'total_price']
+
+    def get_product_image(self, obj):
+        request = self.context.get('request')
+        if obj.product.image:
+            image_url = obj.product.image.url
+            if request is not None:
+                return request.build_absolute_uri(image_url)
+            return image_url
+        return None
+
+    def get_total_price(self, obj):
+        return obj.total_price()
+
 
 
 

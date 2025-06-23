@@ -87,22 +87,63 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.exceptions import ValidationError  # ✅ Import here
 
-class CartItemListCreateView(generics.ListCreateAPIView):
-    serializer_class = CartItemSerializer
-    permission_classes = [IsAuthenticated]
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from .models import CartItem, Product
+from .serializers import CartItemSerializer
 
-    def get_queryset(self):
-        return CartItem.objects.filter(user=self.request.user)
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import CartItem, Product
+from .serializers import CartItemSerializer
 
-    def perform_create(self, serializer):
-        user = self.request.user
-        product = serializer.validated_data.get('product')
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+from .models import CartItem, Product
+from .serializers import CartItemSerializer
 
-        # ✅ Check if product is already in cart
-        if CartItem.objects.filter(user=user, product=product).exists():
-            raise ValidationError({"message": "Product already in cart."})
+@api_view(['GET', 'POST'])
+@permission_classes([IsAuthenticated])
+def user_cart(request):
+    user = request.user
 
-        serializer.save(user=user)
+    if request.method == 'POST':
+        product_id = request.data.get('product')
+        quantity = request.data.get('quantity', 1)
+        quantity_type = request.data.get('quantity_type', '1kg')
+        quantity_count = request.data.get('quantity_count', 1)
+
+        try:
+            product = Product.objects.get(id=product_id)
+        except Product.DoesNotExist:
+            return Response({'error': 'Product not found'}, status=404)
+
+        cart_item, created = CartItem.objects.get_or_create(
+            user=user,
+            product=product,
+            defaults={
+                'quantity': quantity,
+                'quantity_type': quantity_type,
+                'quantity_count': quantity_count
+            }
+        )
+        if not created:
+            cart_item.quantity_count += int(quantity_count)
+            cart_item.save()
+
+        serializer = CartItemSerializer(cart_item, context={'request': request})
+        return Response(serializer.data)
+
+    elif request.method == 'GET':
+        items = CartItem.objects.filter(user=user)
+        serializer = CartItemSerializer(items, many=True, context={'request': request})
+        return Response(serializer.data)
+
+
+
 
     
 

@@ -12,7 +12,7 @@ from .views import (
 
 from django.urls import path
 from .views import (
-    CartItemListCreateView,
+    user_cart,
     CartItemDeleteView,
     CheckoutView,
     OrderHistoryView
@@ -36,7 +36,7 @@ urlpatterns = [
 
 
     #cart urls
-    path('cart/', CartItemListCreateView.as_view(), name='cart'),
+    path('api/cart/', user_cart),
     path('cart/<int:pk>/delete/', CartItemDeleteView.as_view(), name='cart-delete'),
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('orders/', OrderHistoryView.as_view(), name='order-history'),
