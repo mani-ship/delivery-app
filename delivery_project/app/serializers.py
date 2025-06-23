@@ -111,7 +111,7 @@ class CartItemSerializer(serializers.ModelSerializer):
         if obj.product.image:
             image_url = obj.product.image.url
             if request is not None:
-                return request.build_absolute_uri(image_url)
+                return obj.product.image.url 
             return image_url
         return None
 
