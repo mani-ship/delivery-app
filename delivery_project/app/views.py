@@ -154,7 +154,7 @@ class CartItemDeleteView(APIView):
         try:
             item = CartItem.objects.get(pk=pk, user=request.user)
             item.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
+            return Response({"message": "Cart items deleted"}, status=status.HTTP_200_OK)
         except CartItem.DoesNotExist:
             return Response({'message':'Item not found'}, status=404)
 
