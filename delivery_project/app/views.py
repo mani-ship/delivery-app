@@ -252,7 +252,7 @@ class RandomProductsView(APIView):
     def get(self, request):
         products = Product.objects.all()
         random_products = random.sample(list(products), min(5, len(products)))
-        serializer = ProductSerializers(random_products, many=True, context={'request': request})
+        serializer = ProductSerializers(products, many=True)
         return Response(serializer.data)
 
     

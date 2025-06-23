@@ -77,10 +77,14 @@ class ProductSerializers(serializers.ModelSerializer):
         model = Product
         fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']
 
-    def get_in_cart(self, product):
-        user = self.context.get('request').user
-        if user.is_authenticated:
-            return product.cartitem_set.filter(user=user).exists()
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        # Use relative URL only
+        if instance.image:
+            representation['image'] = instance.image.url  # gives relative path
+        return representation
+    def get_in_cart(self, obj):
+        # Dummy logic, customize this based on your actual cart/user
         return False
 
 
