@@ -67,21 +67,19 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 # serializers.py
-from rest_framework import serializers
-from .models import Product
-
 class ProductSerializers(serializers.ModelSerializer):
     in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']
-    
+        fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']  # include relevant fields
+
     def get_in_cart(self, obj):
-        request = self.context.get('request')
-        if request and request.user.is_authenticated:
-            return Product.objects.filter(user=request.user, product=obj).exists()
+        user = self.context.get('user')
+        if user and user.is_authenticated:
+            return CartItem.objects.filter(user=user, product=obj).exists()
         return False
+
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)

@@ -141,11 +141,49 @@ def user_cart(request):
         items = CartItem.objects.filter(user=user)
         serializer = CartItemSerializer(items, many=True, context={'request': request})
         return Response(serializer.data)
-
-
-
-
     
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework import status
+from .models import CartItem, Product
+
+class CartUpdateQuantityView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+        product_id = request.data.get('product_id')
+        action = request.data.get('action')  # 'increase' or 'decrease'
+        print(f"User: {user}, Product ID: {product_id}")
+        if not product_id or action not in ['increase', 'decrease']:
+            return Response(
+                {"message": "Both product_id and a valid action (increase/decrease) are required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        try:
+            cart_item = CartItem.objects.get(user=user, product_id=product_id)
+        except CartItem.DoesNotExist:
+            return Response({"message": "Item not found in your cart."}, status=status.HTTP_404_NOT_FOUND)
+
+        if action == 'increase':
+            cart_item.quantity_count += 1
+        elif action == 'decrease':
+            if cart_item.quantity_count > 1:
+                cart_item.quantity_count -= 1
+            else:
+                cart_item.delete()
+                return Response({"message": "Item removed from cart."}, status=status.HTTP_200_OK)
+
+        cart_item.save()
+        return Response({
+            "message": "Quantity updated.",
+            "quantity_count": cart_item.quantity_count
+        }, status=status.HTTP_200_OK)
+
+
 
 class CartItemDeleteView(APIView):
     permission_classes = [IsAuthenticated]
@@ -157,6 +195,11 @@ class CartItemDeleteView(APIView):
             return Response({"message": "Cart items deleted"}, status=status.HTTP_200_OK)
         except CartItem.DoesNotExist:
             return Response({'message':'Item not found'}, status=404)
+
+
+
+
+
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated]
@@ -286,14 +329,17 @@ class CreateOrderView(APIView):
 import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from .models import Product
+from rest_framework.permissions import IsAuthenticatedOrReadOnly
+from .models import Product, CartItem
 from .serializers import ProductSerializers
 
 class RandomProductsView(APIView):
+    permission_classes = [IsAuthenticatedOrReadOnly]
+
     def get(self, request):
         products = Product.objects.all()
         random_products = random.sample(list(products), min(5, len(products)))
-        serializer = ProductSerializers(products, many=True)
+        serializer = ProductSerializers(random_products, many=True, context={'user': request.user})
         return Response(serializer.data)
 
     

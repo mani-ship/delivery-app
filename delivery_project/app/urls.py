@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegisterView,MyTokenObtainPairView,UpdateLocationView, FrequentlyBoughtTogetherView,ForgotPasswordView,ResetPasswordView,CreateOrderView,RandomProductsView,UpdateLocationView,AddressListCreateView,AddressDetailView
+from .views import RegisterView,MyTokenObtainPairView,UpdateLocationView, FrequentlyBoughtTogetherView,ForgotPasswordView,ResetPasswordView,CreateOrderView,RandomProductsView,UpdateLocationView,AddressListCreateView,AddressDetailView,CartUpdateQuantityView
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 from django.urls import path
@@ -38,6 +38,7 @@ urlpatterns = [
     #cart urls
     path('api/cart/', user_cart),
     path('cart/<int:pk>/delete/', CartItemDeleteView.as_view(), name='cart-delete'),
+     path('cart/update-quantity/', CartUpdateQuantityView.as_view(), name='update-cart-quantity'),
     path('checkout/', CheckoutView.as_view(), name='checkout'),
     path('orders/', OrderHistoryView.as_view(), name='order-history'),
 
