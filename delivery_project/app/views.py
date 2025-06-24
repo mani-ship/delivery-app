@@ -64,6 +64,18 @@ class ProductListCreateView(generics.ListCreateAPIView):
         if category_id:
             queryset = queryset.filter(category__id=category_id)
         return queryset
+    
+from rest_framework.decorators import api_view
+@api_view(['GET'])
+def get_product_by_id(request, pk):
+    try:
+        product = Product.objects.get(pk=pk)
+    except Product.DoesNotExist:
+        return Response({"message": "Product not found"}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = ProductSerializer(product)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
 
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
      def get_queryset(self):
@@ -156,17 +168,15 @@ class CartUpdateQuantityView(APIView):
         user = request.user
         product_id = request.data.get('product_id')
         action = request.data.get('action')  # 'increase' or 'decrease'
-        print(f"User: {user}, Product ID: {product_id}")
+
         if not product_id or action not in ['increase', 'decrease']:
-            return Response(
-                {"message": "Both product_id and a valid action (increase/decrease) are required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+            return Response({"message": "product_id and valid action ('increase' or 'decrease') are required"},
+                            status=status.HTTP_400_BAD_REQUEST)
 
         try:
             cart_item = CartItem.objects.get(user=user, product_id=product_id)
         except CartItem.DoesNotExist:
-            return Response({"message": "Item not found in your cart."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "Item not found in cart"}, status=status.HTTP_404_NOT_FOUND)
 
         if action == 'increase':
             cart_item.quantity_count += 1
@@ -175,12 +185,19 @@ class CartUpdateQuantityView(APIView):
                 cart_item.quantity_count -= 1
             else:
                 cart_item.delete()
-                return Response({"message": "Item removed from cart."}, status=status.HTTP_200_OK)
+                return Response({"message": "Item removed from cart"}, status=status.HTTP_200_OK)
 
         cart_item.save()
+
+        product = cart_item.product
+        price = product.discount_price if product.discount_price else product.price
+        total_price = price * cart_item.quantity_count
+
         return Response({
-            "message": "Quantity updated.",
-            "quantity_count": cart_item.quantity_count
+            "message": "Quantity updated",
+            "quantity": cart_item.quantity_count,
+            "unit_price": str(price),
+            "total_price": str(total_price)
         }, status=status.HTTP_200_OK)
 
 
@@ -229,7 +246,7 @@ class OrderHistoryView(generics.ListAPIView):
     permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
-        return Order.objects.filter(user=self.request.user).order_by('-created_at')
+        return Order.objects.filter(user=self.request.user)
 
 
 class UpdateLocationView(APIView):
