@@ -11,7 +11,6 @@ from .serializers import MyTokenObtainPairSerializer
 from rest_framework import generics, permissions
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer ,ProductSerializers
-
 import razorpay
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
@@ -281,12 +280,12 @@ class UpdateLocationView(APIView):
         # If no stores found
         if not nearby_stores:
             return Response({
-                "message": "Stores not available in this location."
+                "message": "True"
             }, status=200)
 
         # If stores found
         return Response({
-            "message": "Location updated successfully.",
+            "message": "False",
             
         })
 

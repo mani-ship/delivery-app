@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
 
+
+
 class DeliveryAgentManager(BaseUserManager):
     def create_user(self, agent_id, password=None, **extra_fields):
         if not agent_id:
@@ -9,18 +11,13 @@ class DeliveryAgentManager(BaseUserManager):
         agent.set_password(password)
         agent.save(using=self._db)
         return agent
-    
-    def create_superuser(self, agent_id, password=None, **extra_fields):
-        extra_fields.setdefault('is_staff', True)
-        extra_fields.setdefault('is_superuser', True)
-        return self.create_user(agent_id, password, **extra_fields)
 
 class DeliveryAgent(AbstractBaseUser):
     agent_id = models.CharField(max_length=30, unique=True)
     name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     mobile_number = models.CharField(max_length=15)
-    whatsapp_number = models.CharField(max_length=15)
+    email_id = models.EmailField(unique=True)
     address = models.TextField()
     aadhar_card_number = models.CharField(max_length=20)
     pan_number = models.CharField(max_length=20)
@@ -36,6 +33,18 @@ class DeliveryAgent(AbstractBaseUser):
     def __str__(self):
         return self.agent_id
 
-  
-  
 
+
+from django.db import models
+from django.contrib.auth.models import User
+import random
+
+class PasswordResetOTP(models.Model):
+    agent = models.ForeignKey(DeliveryAgent, on_delete=models.CASCADE,default=True)
+    otp = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_verified = models.BooleanField(default=False)
+
+    def generate_otp(self):
+        self.otp = str(random.randint(100000, 999999))
+        self.save()

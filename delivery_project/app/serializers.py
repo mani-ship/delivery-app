@@ -188,4 +188,4 @@ from .models import UserAddress
 class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAddress
-        fields = ['id', 'address', 'phone_number', 'alternate_phone_number']
+        fields = [ 'address', 'phone_number', 'alternate_phone_number','latitude','longitude']
