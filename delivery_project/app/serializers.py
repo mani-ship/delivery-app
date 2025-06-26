@@ -67,12 +67,36 @@ class ProductSerializer(serializers.ModelSerializer):
 
 
 # serializers.py
+from rest_framework import serializers
+from .models import Product, CartItem
+
+from rest_framework import serializers
+from .models import Product, CartItem
+
 class ProductSerializers(serializers.ModelSerializer):
+    quantity_type = serializers.SerializerMethodField()
+    quantity_count = serializers.SerializerMethodField()
     in_cart = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = ['id', 'name', 'price', 'discount_price', 'image', 'in_cart']  # include relevant fields
+        fields = ['id', 'name', 'image', 'discount_price', 'in_cart', 'quantity_type', 'quantity_count']
+
+    def get_quantity_type(self, obj):
+        user = self.context.get('user')
+        if user and user.is_authenticated:
+            cart_item = CartItem.objects.filter(user=user, product=obj).first()
+            if cart_item:
+                return cart_item.quantity_type
+        return None
+
+    def get_quantity_count(self, obj):
+        user = self.context.get('user')
+        if user and user.is_authenticated:
+            cart_item = CartItem.objects.filter(user=user, product=obj).first()
+            if cart_item:
+                return cart_item.quantity_count
+        return None
 
     def get_in_cart(self, obj):
         user = self.context.get('user')
@@ -80,13 +104,20 @@ class ProductSerializers(serializers.ModelSerializer):
             return CartItem.objects.filter(user=user, product=obj).exists()
         return False
 
-
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        # Use relative URL only
+
+        # 🧹 Remove fields with null if not in cart
+        if not representation['in_cart']:
+            representation.pop('quantity_type', None)
+            representation.pop('quantity_count', None)
+
+        # 🖼️ Use relative URL for image
         if instance.image:
-            representation['image'] = instance.image.url  # gives relative path
+            representation['image'] = instance.image.url
+
         return representation
+
     
 
 

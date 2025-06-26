@@ -346,7 +346,7 @@ import random
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticatedOrReadOnly
-from .models import Product, CartItem
+from .models import Product
 from .serializers import ProductSerializers
 
 class RandomProductsView(APIView):
@@ -355,8 +355,16 @@ class RandomProductsView(APIView):
     def get(self, request):
         products = Product.objects.all()
         random_products = random.sample(list(products), min(5, len(products)))
-        serializer = ProductSerializers(random_products, many=True, context={'user': request.user})
+
+        serializer = ProductSerializers(
+            random_products,
+            many=True,
+            context={'user': request.user}
+        )
+
         return Response(serializer.data)
+
+
 
     
 
