@@ -1,6 +1,8 @@
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
-
+from django.utils import timezone
+from datetime import timedelta
+import random
 
 
 class DeliveryAgentManager(BaseUserManager):
@@ -17,7 +19,7 @@ class DeliveryAgent(AbstractBaseUser):
     name = models.CharField(max_length=100)
     date_of_birth = models.DateField()
     mobile_number = models.CharField(max_length=15)
-    email_id = models.EmailField(unique=True)
+    email= models.EmailField(unique=True)
     address = models.TextField()
     aadhar_card_number = models.CharField(max_length=20)
     pan_number = models.CharField(max_length=20)
@@ -48,3 +50,5 @@ class PasswordResetOTP(models.Model):
     def generate_otp(self):
         self.otp = str(random.randint(100000, 999999))
         self.save()
+    def is_expired(self):
+        return timezone.now() > self.created_at + timedelta(minutes=5)
