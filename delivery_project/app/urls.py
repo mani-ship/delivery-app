@@ -15,7 +15,7 @@ from .views import (
     user_cart,
     CartItemDeleteView,
     CheckoutView,
-    OrderHistoryView
+    OrderListView
 )
 
 urlpatterns = [
@@ -32,8 +32,8 @@ urlpatterns = [
 
     # Product URLs
     path('products/', ProductListCreateView.as_view(), name='product-list-create'),
-    path('product/<int:pk>/', get_product_by_id, name='get-product-by-id'),
     path('products/<int:pk>/', ProductRetrieveUpdateDestroyView.as_view(), name='product-detail'),
+    path('get-product/<int:pk>/', get_product_by_id, name='get-product-by-id'),
 
 
     #cart urls
@@ -41,13 +41,13 @@ urlpatterns = [
     path('cart/<int:pk>/delete/', CartItemDeleteView.as_view(), name='cart-delete'),
      path('cart/update-quantity/', CartUpdateQuantityView.as_view(), name='update-cart-quantity'),
     path('checkout/', CheckoutView.as_view(), name='checkout'),
-    path('orders/', OrderHistoryView.as_view(), name='order-history'),
+    path('orders/', OrderListView.as_view(), name='order-list'),
 
     #location urls
     path('location/update/', UpdateLocationView.as_view(), name='update-location'),
 
     #frequent urls
-    path('products/<int:product_id>/frequently-bought-together/',    FrequentlyBoughtTogetherView.as_view()),
+    path('products/<int:product_id>/frequently-bought-together/', FrequentlyBoughtTogetherView.as_view()),
 
     #password reset urls
     path('forgot-password/', ForgotPasswordView.as_view(), name='forgot-password'),

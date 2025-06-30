@@ -163,7 +163,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Order
-        fields = ['id', 'user','created_at', 'total_amount', 'items']
+        fields = '__all__'  
+
+    
 
 
 class LocationSerializer(serializers.ModelSerializer):

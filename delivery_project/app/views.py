@@ -53,6 +53,13 @@ class CategoryRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = CategorySerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
+from rest_framework import generics, permissions, status
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Product
+from .serializers import ProductSerializer
+
+# List & Create Products
 class ProductListCreateView(generics.ListCreateAPIView):
     serializer_class = ProductSerializer
     permission_classes = [permissions.IsAuthenticatedOrReadOnly]
@@ -63,8 +70,9 @@ class ProductListCreateView(generics.ListCreateAPIView):
         if category_id:
             queryset = queryset.filter(category__id=category_id)
         return queryset
-    
-from rest_framework.decorators import api_view
+
+
+# Get product by ID (function-based view)
 @api_view(['GET'])
 def get_product_by_id(request, pk):
     try:
@@ -76,22 +84,12 @@ def get_product_by_id(request, pk):
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
+# Retrieve, Update, Delete a Product (class-based view)
 class ProductRetrieveUpdateDestroyView(generics.RetrieveUpdateDestroyAPIView):
-     def get_queryset(self):
-        queryset = Product.objects.all().order_by('-created_at')
-        category_id = self.request.query_params.get('category_id')
-        if category_id:
-            queryset = queryset.filter(category__id=category_id)
-        return queryset
+    queryset = Product.objects.all()
+    serializer_class = ProductSerializer  # ✅ Required to fix AssertionError
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
 
-     def list(self, request, *args, **kwargs):
-        queryset = self.get_queryset()
-
-        if not queryset.exists():
-            return Response({"message": "No products found."}, status=status.HTTP_404_NOT_FOUND)
-
-        serializer = self.get_serializer(queryset, many=True)
-        return Response(serializer.data)
 
 
 from rest_framework.response import Response
@@ -240,12 +238,14 @@ class CheckoutView(APIView):
 
         return Response({'message': 'Order placed successfully', 'order_id': order.id})
 
-class OrderHistoryView(generics.ListAPIView):
-    serializer_class = OrderSerializer
-    permission_classes = [IsAuthenticated]
+from rest_framework import generics
+from .models import Order
+from .serializers import OrderSerializer
 
-    def get_queryset(self):
-        return Order.objects.filter(user=self.request.user)
+class OrderListView(generics.ListAPIView):
+    queryset = Order.objects.all()
+    serializer_class = OrderSerializer
+
 
 
 class UpdateLocationView(APIView):
