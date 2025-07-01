@@ -119,7 +119,9 @@ class VerifyOTPAPIView(APIView):
 
 
 from rest_framework.views import APIView
-from agent.models import DeliveryAgent  # ✅ okay here
+from rest_framework.response import Response
+from django.contrib.auth.hashers import make_password
+from agent.models import DeliveryAgent
 
 class ResetPassword(APIView):
     def post(self, request):
@@ -132,7 +134,7 @@ class ResetPassword(APIView):
 
         try:
             user = DeliveryAgent.objects.get(email=email)
-            user.set_password(password)
+            user.password = make_password(password)  # ✅ hashes password manually
             user.save()
             return Response({"message": "Password reset successful"}, status=200)
         except DeliveryAgent.DoesNotExist:
