@@ -125,17 +125,21 @@ from agent.models import DeliveryAgent
 
 class ResetPassword(APIView):
     def post(self, request):
-        email = request.session.get('reset_email')
+        email = request.data.get("email")
         password = request.data.get("password")
         confirm_password = request.data.get("confirm_password")
+
+        if not email or not password or not confirm_password:
+            return Response({"message": "Email, password and confirm password are required"}, status=400)
 
         if password != confirm_password:
             return Response({"message": "Passwords do not match"}, status=400)
 
         try:
             user = DeliveryAgent.objects.get(email=email)
-            user.password = make_password(password)  # ✅ hashes password manually
+            user.password = make_password(password)
             user.save()
             return Response({"message": "Password reset successful"}, status=200)
         except DeliveryAgent.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
+
