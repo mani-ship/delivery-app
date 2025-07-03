@@ -112,3 +112,12 @@ class UserAddress(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s address"
+
+
+class OrderAddressMapping(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE,default=True)
+    address = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
+    assigned_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.order.order_id} -> {self.address}"

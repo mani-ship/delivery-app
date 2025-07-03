@@ -393,3 +393,43 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         return UserAddress.objects.filter(user=self.request.user)
 
+
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Order, UserAddress, OrderAddressMapping
+from .serializers import OrderSerializer, UserAddressSerializer
+from rest_framework.permissions import IsAuthenticated
+
+
+class PlaceOrderView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        # Deserialize and validate order and address
+        order_serializer = OrderSerializer(data=request.data)
+        address_serializer = UserAddressSerializer(data=request.data)
+
+        order_valid = order_serializer.is_valid()
+        address_valid = address_serializer.is_valid()
+
+        if order_valid and address_valid:
+            # Save order and address
+            order = order_serializer.save(user=request.user)
+            address = address_serializer.save(user=request.user)
+
+            # Create mapping automatically
+            OrderAddressMapping.objects.create(order=order, address=address)
+
+            return Response({
+                "message": "Order and address saved successfully and linked.",
+                "order_id": order.id,
+                "address_id": address.id
+            }, status=status.HTTP_201_CREATED)
+
+        return Response({
+            "order_errors": order_serializer.errors,
+            "address_errors": address_serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
+

@@ -222,3 +222,26 @@ class AddressSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserAddress
         fields = [ 'address', 'phone_number', 'alternate_phone_number','latitude','longitude']
+
+
+from rest_framework import serializers
+from .models import OrderAddressMapping
+
+class OrderItemAddressMappingSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderAddressMapping
+        fields = ['order_item', 'address', 'assigned_at']
+
+
+from rest_framework import serializers
+from .models import UserAddress, Order
+
+class UserAddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = UserAddress
+        fields = ['address']
+
+class OrderSerializers(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ['total_amount']
