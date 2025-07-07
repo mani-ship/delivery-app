@@ -395,13 +395,15 @@ class AddressDetailView(generics.RetrieveUpdateDestroyAPIView):
 
 
 
+
+
+
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Order, UserAddress, OrderAddressMapping
 from .serializers import OrderSerializer, UserAddressSerializer
-from rest_framework.permissions import IsAuthenticated
-
+from .models import OrderAddressMapping
 
 class PlaceOrderView(APIView):
     permission_classes = [IsAuthenticated]
@@ -411,25 +413,28 @@ class PlaceOrderView(APIView):
         order_serializer = OrderSerializer(data=request.data)
         address_serializer = UserAddressSerializer(data=request.data)
 
-        order_valid = order_serializer.is_valid()
-        address_valid = address_serializer.is_valid()
-
-        if order_valid and address_valid:
-            # Save order and address
-            order = order_serializer.save(user=request.user)
-            address = address_serializer.save(user=request.user)
-
-            # Create mapping automatically
-            OrderAddressMapping.objects.create(order=order, address=address)
-
+        if not order_serializer.is_valid():
             return Response({
-                "message": "Order and address saved successfully and linked.",
-                "order_id": order.id,
-                "address_id": address.id
-            }, status=status.HTTP_201_CREATED)
+                "error": "Invalid order data",
+                "details": order_serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if not address_serializer.is_valid():
+            return Response({
+                "error": "Invalid address data",
+                "details": address_serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        # Save valid order and address
+        order = order_serializer.save(user=request.user)
+        address = address_serializer.save(user=request.user)
+
+        # Automatically create order-address mapping
+        OrderAddressMapping.objects.create(order=order, address=address)
 
         return Response({
-            "order_errors": order_serializer.errors,
-            "address_errors": address_serializer.errors
-        }, status=status.HTTP_400_BAD_REQUEST)
+            "message": "Order and address saved successfully and linked.",
+            "order_id": order.id,
+            "address_id": address.id
+        }, status=status.HTTP_201_CREATED)
 

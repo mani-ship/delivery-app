@@ -109,15 +109,20 @@ class UserAddress(models.Model):
     longitude = models.DecimalField(max_digits=9, decimal_places=6, null=True, blank=True)  #
     alternate_phone_number = models.CharField(max_length=15, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    flat_no = models.CharField(max_length=255,default=True)
+    landmark = models.CharField(max_length=255,default=True)
+    street = models.CharField(max_length=255,default=True)
+    city = models.CharField(max_length=100,default=True)
+    pincode = models.CharField(max_length=10,default=True)
 
     def __str__(self):
-        return f"{self.user.username}'s address"
+        return f"{self.street}, {self.city} - {self.pincode}"
 
-
+from agent.models import DeliveryAgent
 class OrderAddressMapping(models.Model):
     order = models.OneToOneField(Order, on_delete=models.CASCADE,default=True)
     address = models.ForeignKey(UserAddress, on_delete=models.CASCADE)
-    assigned_at = models.DateTimeField(auto_now_add=True)
+    assigned_agent = models.ForeignKey(DeliveryAgent, null=True, blank=True, on_delete=models.SET_NULL)
 
     def __str__(self):
         return f"{self.order.order_id} -> {self.address}"

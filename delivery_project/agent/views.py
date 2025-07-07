@@ -143,3 +143,76 @@ class ResetPassword(APIView):
         except DeliveryAgent.DoesNotExist:
             return Response({"message": "User not found"}, status=404)
 
+
+
+# agent/views.py
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from app.models import OrderAddressMapping
+from .serializers import OrderAddressMappingSerializer
+from agent.models import DeliveryAgent
+
+from agent.models import DeliveryAgent
+from app.models import OrderAddressMapping
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from agent.models import DeliveryAgent
+from app.models import OrderAddressMapping
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from agent.models import DeliveryAgent
+from app.models import OrderAddressMapping
+
+class AssignOrderToAgent(APIView):
+    def get(self, request):
+        agent_id = request.query_params.get("agent_id")
+        if not agent_id:
+            return Response({"error": "agent_id is required"}, status=400)
+
+        try:
+            agent = DeliveryAgent.objects.get(agent_id=agent_id)
+        except DeliveryAgent.DoesNotExist:
+            return Response({"error": "Agent not found"}, status=404)
+
+        # Check if agent already has an assigned order
+        existing = OrderAddressMapping.objects.filter(assigned_agent=agent).first()
+        if existing:
+            return Response({
+                "order_id": existing.order.id,
+                "address": {
+                    "flat_no": existing.address.flat_no,
+                    "landmark": existing.address.landmark,
+                    "street": existing.address.street,
+                    "city": existing.address.city,
+                    "pincode": existing.address.pincode
+                }
+            }, status=200)
+
+        # Get the first unassigned order
+        unassigned_order = OrderAddressMapping.objects.filter(assigned_agent__isnull=True).first()
+
+        if unassigned_order:
+            unassigned_order.assigned_agent = agent
+            unassigned_order.save()
+
+            return Response({
+                "message": "Order assigned successfully",
+                "order_id": unassigned_order.order.id,
+               "address": {
+                   "flat_no": unassigned_order.address.flat_no,
+                   "landmark": unassigned_order.address.landmark,
+                    "street": unassigned_order.address.street,
+                    "city": unassigned_order.address.city,
+                    "pincode": unassigned_order.address.pincode
+                }
+            }, status=200)
+
+        return Response({"message": "No unassigned orders available"}, status=200)
+
+
