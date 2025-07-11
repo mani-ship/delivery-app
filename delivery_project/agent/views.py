@@ -19,7 +19,7 @@ class DeliveryAgentCreateView(generics.CreateAPIView):
         
         return Response({
             "message": "Registration failed",
-            "errors": serializer.errors
+            "message": serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -173,12 +173,12 @@ class AssignOrderToAgent(APIView):
     def get(self, request):
         agent_id = request.query_params.get("agent_id")
         if not agent_id:
-            return Response({"error": "agent_id is required"}, status=400)
+            return Response({"message": "agent_id is required"}, status=400)
 
         try:
             agent = DeliveryAgent.objects.get(agent_id=agent_id)
         except DeliveryAgent.DoesNotExist:
-            return Response({"error": "Agent not found"}, status=404)
+            return Response({"message": "Agent not found"}, status=404)
 
         # Check if agent already has an assigned order
         existing = OrderAddressMapping.objects.filter(assigned_agent=agent).first()
@@ -216,3 +216,4 @@ class AssignOrderToAgent(APIView):
         return Response({"message": "No unassigned orders available"}, status=200)
 
 
+ 

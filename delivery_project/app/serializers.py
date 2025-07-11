@@ -234,7 +234,7 @@ class OrderItemAddressMappingSerializer(serializers.ModelSerializer):
 
 
 from rest_framework import serializers
-from .models import UserAddress, Order
+from .models import UserAddress, Order          
 
 class UserAddressSerializer(serializers.ModelSerializer):
     class Meta:
